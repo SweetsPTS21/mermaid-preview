@@ -72,7 +72,7 @@ const MermaidPreview = ({ loading, diagramText }) => {
         // Set timer mới - render sau 1 giây
         debounceTimerRef.current = setTimeout(() => {
             renderDiagram().then()
-        }, 1000)
+        }, 500)
 
         // Cleanup
         return () => {

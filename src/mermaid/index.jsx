@@ -5,6 +5,7 @@ import { exampleDiagram } from './example'
 import { createMermaidFile, getFileData, getMermaidFile } from '../api/mermaid'
 import { formatFilename } from './utls'
 import MermaidPreview from './preview'
+import mermaid from 'mermaid'
 
 const { Sider } = Layout
 const { TextArea } = Input
@@ -27,17 +28,33 @@ function Mermaid() {
     }, [])
 
     const handleFileUpload = (file) => {
+        const fileName = file.name.toLowerCase()
+        if (!fileName.endsWith('.mmd')) {
+            message.error('Chỉ chấp nhận file có định dạng .mmd!')
+            return false
+        }
+
         const reader = new FileReader()
         reader.onload = (e) => {
             const content = e.target.result
-            setDiagramText(content)
-            message.success('Đã tải file thành công!')
+            checkValidDiagram(content).then((result) => {
+                if (result) {
+                    setDiagramText(content)
+                    message.success('Đã tải file thành công!')
+                } else {
+                    message.error('File không hợp lệ hoặc có lỗi cú pháp!')
+                }
+            })
         }
         reader.onerror = () => {
             message.error('Lỗi đọc file!')
         }
         reader.readAsText(file)
         return false // Ngăn upload tự động
+    }
+
+    const checkValidDiagram = async (content) => {
+        return await mermaid.parse(content, { suppressErrors: true })
     }
 
     const uploadMermaidFile = async () => {
