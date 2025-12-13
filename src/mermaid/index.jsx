@@ -1,30 +1,13 @@
-import React, { useEffect, useRef, useState } from 'react'
-import { Button, Card, Input, Layout, message, Space, Spin, Tooltip, Upload } from 'antd'
-import {
-    DragOutlined,
-    FullscreenExitOutlined,
-    FullscreenOutlined,
-    LinkOutlined,
-    ReloadOutlined,
-    SaveOutlined,
-    UploadOutlined,
-    ZoomInOutlined,
-    ZoomOutOutlined
-} from '@ant-design/icons'
-import mermaid from 'mermaid'
+import React, { useEffect, useState } from 'react'
+import { Button, Card, Input, Layout, message, Space, Upload } from 'antd'
+import { LinkOutlined, SaveOutlined, UploadOutlined } from '@ant-design/icons'
 import { exampleDiagram } from './example'
 import { createMermaidFile, getFileData, getMermaidFile } from '../api/mermaid'
 import { formatFilename } from './utls'
+import MermaidPreview from './preview'
 
-const { Sider, Content } = Layout
+const { Sider } = Layout
 const { TextArea } = Input
-
-// Cấu hình Mermaid
-mermaid.initialize({
-    startOnLoad: false,
-    theme: 'default',
-    securityLevel: 'loose'
-})
 
 function Mermaid() {
     const [diagramText, setDiagramText] = useState(
@@ -32,17 +15,8 @@ function Mermaid() {
     )
     const [loading, setLoading] = useState(false)
     const [saving, setSaving] = useState(false)
-    const [diagramSvg, setDiagramSvg] = useState('')
     const [shareUrl, setShareUrl] = useState(null)
-    const [scale, setScale] = useState(1)
-    const [position, setPosition] = useState({ x: 0, y: 0 })
-    const [isDragging, setIsDragging] = useState(false)
-    const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
-    const [isFullscreen, setIsFullscreen] = useState(false)
-    const containerRef = useRef(null)
-    const contentRef = useRef(null)
 
-    // Kiểm tra URL params để tải file từ B2
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search)
         const fileName = urlParams.get('file')
@@ -51,32 +25,6 @@ function Mermaid() {
             loadFileData(fileName).then()
         }
     }, [])
-
-    // Render diagram khi text thay đổi
-    useEffect(() => {
-        if (diagramText) {
-            renderDiagram().then()
-        }
-    }, [diagramText])
-
-    const renderDiagram = async () => {
-        if (!diagramText.trim()) {
-            setDiagramSvg('')
-            return
-        }
-
-        try {
-            setLoading(true)
-            const id = 'mermaid-' + Math.random().toString(36).substr(2, 9)
-            const { svg } = await mermaid.render(id, diagramText)
-            setDiagramSvg(svg)
-        } catch (error) {
-            message.error('Lỗi render diagram: ' + error.message)
-            setDiagramSvg('')
-        } finally {
-            setLoading(false)
-        }
-    }
 
     const handleFileUpload = (file) => {
         const reader = new FileReader()
@@ -130,10 +78,6 @@ function Mermaid() {
                 'Đã lưu thành công! Link đã được copy vào clipboard.'
             )
             setShareUrl(shareUrl)
-
-            // Hiển thị modal với link
-            const linkText = `Link chia sẻ: ${shareUrl}`
-            console.log(linkText)
         } catch (error) {
             message.error('Lỗi lưu file: ' + error.message)
         } finally {
@@ -152,7 +96,7 @@ function Mermaid() {
                 return
             }
 
-            // fetch file url from server
+            // fetch file from server
             const {
                 success,
                 message: errorMsg,
@@ -189,77 +133,8 @@ function Mermaid() {
         }
     }
 
-    // Zoom functions
-    const handleZoomIn = () => {
-        setScale((prev) => Math.min(prev + 0.2, 3))
-    }
-
-    const handleZoomOut = () => {
-        setScale((prev) => Math.max(prev - 0.2, 0.5))
-    }
-
-    const handleResetView = () => {
-        setScale(1)
-        setPosition({ x: 0, y: 0 })
-    }
-
-    // Drag functions
-    const handleMouseDown = (e) => {
-        if (e.button === 0) {
-            // Left click only
-            setIsDragging(true)
-            setDragStart({
-                x: e.clientX - position.x,
-                y: e.clientY - position.y
-            })
-        }
-    }
-
-    const handleMouseMove = (e) => {
-        if (isDragging) {
-            setPosition({
-                x: e.clientX - dragStart.x,
-                y: e.clientY - dragStart.y
-            })
-        }
-    }
-
-    const handleMouseUp = () => {
-        setIsDragging(false)
-    }
-
-    // Fullscreen functions
-    const toggleFullscreen = () => {
-        if (!document.fullscreenElement) {
-            contentRef.current?.requestFullscreen()
-            setIsFullscreen(true)
-        } else {
-            document.exitFullscreen()
-            setIsFullscreen(false)
-        }
-    }
-
-    useEffect(() => {
-        const handleFullscreenChange = () => {
-            setIsFullscreen(!!document.fullscreenElement)
-        }
-
-        document.addEventListener('fullscreenchange', handleFullscreenChange)
-        return () => {
-            document.removeEventListener(
-                'fullscreenchange',
-                handleFullscreenChange
-            )
-        }
-    }, [])
-
-    // Mouse wheel zoom
-    const handleWheel = (e) => {
-        if (e.ctrlKey || e.metaKey) {
-            e.preventDefault()
-            const delta = e.deltaY > 0 ? -0.1 : 0.1
-            setScale((prev) => Math.max(0.5, Math.min(3, prev + delta)))
-        }
+    const onChange = (diagram) => {
+        setDiagramText(diagram)
     }
 
     return (
@@ -273,7 +148,7 @@ function Mermaid() {
                 }}
             >
                 <Space
-                    direction="vertical"
+                    orientation="vertical"
                     style={{ width: '100%' }}
                     size="large"
                 >
@@ -292,7 +167,7 @@ function Mermaid() {
                     <Card title="Hoặc nhập Mermaid code" size="small">
                         <TextArea
                             value={diagramText}
-                            onChange={(e) => setDiagramText(e.target.value)}
+                            onChange={(e) => onChange(e.target.value)}
                             placeholder="Nhập Mermaid diagram code..."
                             rows={15}
                             style={{
@@ -336,143 +211,7 @@ function Mermaid() {
                 </Space>
             </Sider>
 
-            <Content
-                style={{ padding: '20px', background: '#fafafa' }}
-                ref={contentRef}
-            >
-                <Card
-                    title="Preview Diagram"
-                    style={{ height: '100%' }}
-                    bodyStyle={{
-                        height: 'calc(100% - 57px)',
-                        overflow: 'hidden',
-                        position: 'relative'
-                    }}
-                    extra={
-                        <Space>
-                            <Tooltip title="Thu nhỏ (Ctrl + Scroll)">
-                                <Button
-                                    icon={<ZoomOutOutlined />}
-                                    onClick={handleZoomOut}
-                                    disabled={scale <= 0.5}
-                                    size="small"
-                                />
-                            </Tooltip>
-                            <span
-                                style={{
-                                    minWidth: '60px',
-                                    textAlign: 'center',
-                                    display: 'inline-block'
-                                }}
-                            >
-                                {Math.round(scale * 100)}%
-                            </span>
-                            <Tooltip title="Phóng to (Ctrl + Scroll)">
-                                <Button
-                                    icon={<ZoomInOutlined />}
-                                    onClick={handleZoomIn}
-                                    disabled={scale >= 3}
-                                    size="small"
-                                />
-                            </Tooltip>
-                            <Tooltip title="Reset view">
-                                <Button
-                                    icon={<ReloadOutlined />}
-                                    onClick={handleResetView}
-                                    size="small"
-                                />
-                            </Tooltip>
-                            <Tooltip
-                                title={
-                                    isFullscreen
-                                        ? 'Thoát toàn màn hình (F11)'
-                                        : 'Toàn màn hình (F11)'
-                                }
-                            >
-                                <Button
-                                    icon={
-                                        isFullscreen ? (
-                                            <FullscreenExitOutlined />
-                                        ) : (
-                                            <FullscreenOutlined />
-                                        )
-                                    }
-                                    onClick={toggleFullscreen}
-                                    size="small"
-                                />
-                            </Tooltip>
-                        </Space>
-                    }
-                >
-                    <div
-                        ref={containerRef}
-                        onMouseDown={handleMouseDown}
-                        onMouseMove={handleMouseMove}
-                        onMouseUp={handleMouseUp}
-                        onMouseLeave={handleMouseUp}
-                        onWheel={handleWheel}
-                        style={{
-                            width: '100%',
-                            height: '100%',
-                            overflow: 'hidden',
-                            cursor: isDragging ? 'grabbing' : 'grab',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            position: 'relative',
-                            background:
-                                'linear-gradient(90deg, #f0f0f0 1px, transparent 1px), linear-gradient(#f0f0f0 1px, transparent 1px)',
-                            backgroundSize: '20px 20px'
-                        }}
-                    >
-                        {loading ? (
-                            <Spin size="large" tip="Đang render diagram..." />
-                        ) : diagramSvg ? (
-                            <div
-                                style={{
-                                    transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
-                                    transformOrigin: 'center center',
-                                    transition: isDragging
-                                        ? 'none'
-                                        : 'transform 0.1s ease-out',
-                                    maxWidth: '100%',
-                                    userSelect: 'none'
-                                }}
-                                dangerouslySetInnerHTML={{ __html: diagramSvg }}
-                            />
-                        ) : (
-                            <div
-                                style={{
-                                    textAlign: 'center',
-                                    color: '#999',
-                                    cursor: 'default'
-                                }}
-                            >
-                                <DragOutlined
-                                    style={{
-                                        fontSize: '48px',
-                                        marginBottom: '16px',
-                                        display: 'block'
-                                    }}
-                                />
-                                <p>
-                                    Upload file hoặc nhập Mermaid code để xem
-                                    preview
-                                </p>
-                                <p
-                                    style={{
-                                        fontSize: '12px',
-                                        marginTop: '8px'
-                                    }}
-                                >
-                                    💡 Tip: Kéo để di chuyển, Ctrl + Scroll để
-                                    zoom
-                                </p>
-                            </div>
-                        )}
-                    </div>
-                </Card>
-            </Content>
+            <MermaidPreview loading={loading} diagramText={diagramText} />
         </Layout>
     )
 }
