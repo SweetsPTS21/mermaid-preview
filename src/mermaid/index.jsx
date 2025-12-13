@@ -12,7 +12,9 @@ import {
     ZoomOutOutlined
 } from '@ant-design/icons'
 import mermaid from 'mermaid'
-import { example } from './example'
+import { exampleDiagram } from './example'
+import { createMermaidFile, getFileData, getMermaidFile } from '../api/mermaid'
+import { formatFilename } from './utls'
 
 const { Sider, Content } = Layout
 const { TextArea } = Input
@@ -31,7 +33,7 @@ function Mermaid() {
     const [loading, setLoading] = useState(false)
     const [saving, setSaving] = useState(false)
     const [diagramSvg, setDiagramSvg] = useState('')
-    const [fileId, setFileId] = useState(null)
+    const [shareUrl, setShareUrl] = useState(null)
     const [scale, setScale] = useState(1)
     const [position, setPosition] = useState({ x: 0, y: 0 })
     const [isDragging, setIsDragging] = useState(false)
@@ -43,17 +45,18 @@ function Mermaid() {
     // Kiểm tra URL params để tải file từ B2
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search)
-        const id = urlParams.get('id')
+        const fileName = urlParams.get('file')
 
-        if (id) {
-            setFileId(id)
-            loadFromB2(id)
+        if (fileName) {
+            loadFileData(fileName).then()
         }
     }, [])
 
     // Render diagram khi text thay đổi
     useEffect(() => {
-        renderDiagram()
+        if (diagramText) {
+            renderDiagram().then()
+        }
     }, [diagramText])
 
     const renderDiagram = async () => {
@@ -89,7 +92,7 @@ function Mermaid() {
         return false // Ngăn upload tự động
     }
 
-    const saveToB2 = async () => {
+    const uploadMermaidFile = async () => {
         if (!diagramText.trim()) {
             message.warning('Vui lòng nhập nội dung diagram!')
             return
@@ -100,19 +103,25 @@ function Mermaid() {
 
             // Tạo file mmd từ text
             const blob = new Blob([diagramText], { type: 'text/plain' })
-            const fileName = `diagram-${Date.now()}.mmd`
-
-            // Giả lập upload lên B2 Storage
-            // Trong thực tế, bạn cần có B2 credentials và endpoint
             const formData = new FormData()
-            formData.append('file', blob, fileName)
+            formData.append('file', blob, `diagram-${Date.now()}.mmd`)
 
-            // Demo: Lưu vào localStorage thay vì B2
-            const fileId = Math.random().toString(36).substr(2, 9)
-            localStorage.setItem(`mmd-${fileId}`, diagramText)
+            const {
+                success,
+                message: errorMsg,
+                data
+            } = await createMermaidFile(formData)
+
+            if (!success) {
+                message.error(`Lỗi khi lưu file ${errorMsg}`)
+            }
+
+            // Lưu vào localStorage để cache
+            const fileName = formatFilename(data?.fileName)
+            localStorage.setItem(fileName, diagramText)
 
             // Tạo URL với file ID
-            const shareUrl = `${window.location.origin}${window.location.pathname}?id=${fileId}`
+            const shareUrl = `${process.env.REACT_APP_MAIN_APP_URL}?file=${fileName}`
 
             // Copy URL vào clipboard
             await navigator.clipboard.writeText(shareUrl)
@@ -120,7 +129,7 @@ function Mermaid() {
             message.success(
                 'Đã lưu thành công! Link đã được copy vào clipboard.'
             )
-            setFileId(fileId)
+            setShareUrl(shareUrl)
 
             // Hiển thị modal với link
             const linkText = `Link chia sẻ: ${shareUrl}`
@@ -132,16 +141,31 @@ function Mermaid() {
         }
     }
 
-    const loadFromB2 = async (id) => {
+    const loadFileData = async (fileName) => {
         try {
             setLoading(true)
 
-            // Demo: Load từ localStorage thay vì B2
-            const content = localStorage.getItem(`mmd-${id}`)
+            // load local file first
+            const localData = loadLocalFile(fileName)
+            if (localData) {
+                setDiagramText(localData)
+                return
+            }
 
-            if (content) {
-                setDiagramText(content)
-                message.success('Đã tải diagram từ link!')
+            // fetch file url from server
+            const {
+                success,
+                message: errorMsg,
+                data
+            } = await getMermaidFile(fileName)
+            if (!success) {
+                message.error(`Lỗi khi tải file ${errorMsg}`)
+            }
+
+            // get file data
+            const fileData = await getFileData(data?.fileDownloadUri)
+            if (fileData) {
+                setDiagramText(fileData)
             } else {
                 message.error('Không tìm thấy file!')
             }
@@ -152,9 +176,12 @@ function Mermaid() {
         }
     }
 
+    const loadLocalFile = (fileName) => {
+        return window.localStorage.getItem(fileName)
+    }
+
     const copyShareLink = () => {
-        if (fileId) {
-            const shareUrl = `${window.location.origin}${window.location.pathname}?id=${fileId}`
+        if (shareUrl) {
             navigator.clipboard.writeText(shareUrl)
             message.success('Đã copy link!')
         } else {
@@ -279,13 +306,13 @@ function Mermaid() {
                         <Button
                             type="primary"
                             icon={<SaveOutlined />}
-                            onClick={saveToB2}
+                            onClick={uploadMermaidFile}
                             loading={saving}
                             block
                         >
                             Lưu & Tạo Link
                         </Button>
-                        {fileId && (
+                        {shareUrl && (
                             <Button
                                 icon={<LinkOutlined />}
                                 onClick={copyShareLink}
@@ -303,7 +330,7 @@ function Mermaid() {
                                 whiteSpace: 'pre-wrap'
                             }}
                         >
-                            {example}
+                            {exampleDiagram}
                         </pre>
                     </Card>
                 </Space>
