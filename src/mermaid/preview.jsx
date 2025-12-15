@@ -8,7 +8,6 @@ import {
     ZoomInOutlined,
     ZoomOutOutlined
 } from '@ant-design/icons'
-import { Content } from 'antd/es/layout/layout'
 import mermaid from 'mermaid'
 
 // Cấu hình Mermaid
@@ -20,14 +19,19 @@ mermaid.initialize({
     suppressErrorLogging: true // Ẩn log lỗi
 })
 
-const MermaidPreview = ({ loading, diagramText }) => {
+const MermaidPreview = ({
+    loading,
+    diagramText,
+    minScale = 0.5,
+    maxScale = 6
+}) => {
     const [position, setPosition] = useState({ x: 0, y: 0 })
     const [isDragging, setIsDragging] = useState(false)
     const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
     const [isFullscreen, setIsFullscreen] = useState(false)
     const containerRef = useRef(null)
     const contentRef = useRef(null)
-    const [scale, setScale] = useState(1)
+    const [scale, setScale] = useState(3)
     const [rendering, setRendering] = useState(false)
     const [diagramSvg, setDiagramSvg] = useState('')
     const debounceTimerRef = useRef(null)
@@ -102,11 +106,11 @@ const MermaidPreview = ({ loading, diagramText }) => {
 
     // Zoom functions
     const handleZoomIn = () => {
-        setScale((prev) => Math.min(prev + 0.5, 5))
+        setScale((prev) => Math.min(prev + 0.5, maxScale))
     }
 
     const handleZoomOut = () => {
-        setScale((prev) => Math.max(prev - 0.5, 0.5))
+        setScale((prev) => Math.max(prev - 0.5, minScale))
     }
 
     const handleResetView = () => {
@@ -154,13 +158,15 @@ const MermaidPreview = ({ loading, diagramText }) => {
         if (e.ctrlKey || e.metaKey) {
             e.preventDefault()
             const delta = e.deltaY > 0 ? -0.5 : 0.5
-            setScale((prev) => Math.max(0.5, Math.min(5, prev + delta)))
+            setScale((prev) =>
+                Math.max(minScale, Math.min(maxScale, prev + delta))
+            )
         }
     }
 
     return (
-        <Content
-            style={{ padding: '20px', background: '#fafafa' }}
+        <div
+            style={{ height: '100vh', padding: '20px', background: '#fafafa' }}
             ref={contentRef}
         >
             <Card
@@ -179,7 +185,7 @@ const MermaidPreview = ({ loading, diagramText }) => {
                             <Button
                                 icon={<ZoomOutOutlined />}
                                 onClick={handleZoomOut}
-                                disabled={scale <= 0.5}
+                                disabled={scale <= minScale}
                                 size="small"
                             />
                         </Tooltip>
@@ -196,7 +202,7 @@ const MermaidPreview = ({ loading, diagramText }) => {
                             <Button
                                 icon={<ZoomInOutlined />}
                                 onClick={handleZoomIn}
-                                disabled={scale >= 5}
+                                disabled={scale >= maxScale}
                                 size="small"
                             />
                         </Tooltip>
@@ -296,7 +302,7 @@ const MermaidPreview = ({ loading, diagramText }) => {
                     )}
                 </div>
             </Card>
-        </Content>
+        </div>
     )
 }
 

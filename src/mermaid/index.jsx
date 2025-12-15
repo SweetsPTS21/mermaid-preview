@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Card, Input, Layout, message, Space, Upload } from 'antd'
+import {
+    Button,
+    Card,
+    Input,
+    Layout,
+    message,
+    Space,
+    Splitter,
+    Upload
+} from 'antd'
 import { LinkOutlined, SaveOutlined, UploadOutlined } from '@ant-design/icons'
 import { exampleDiagram } from './example'
 import { createMermaidFile, getFileData, getMermaidFile } from '../api/mermaid'
@@ -156,79 +165,83 @@ function Mermaid() {
 
     return (
         <Layout style={{ minHeight: '100vh' }}>
-            <Sider
-                width={400}
-                style={{
-                    background: '#fff',
-                    padding: '20px',
-                    borderRight: '1px solid #f0f0f0'
-                }}
-            >
-                <Space
-                    orientation="vertical"
-                    style={{ width: '100%' }}
-                    size="large"
-                >
-                    <Card title="Upload File MMD" size="small">
-                        <Upload
-                            accept=".mmd,.md,.txt"
-                            beforeUpload={handleFileUpload}
-                            showUploadList={false}
-                        >
-                            <Button icon={<UploadOutlined />} block>
-                                Chọn file .mmd
-                            </Button>
-                        </Upload>
-                    </Card>
-
-                    <Card title="Hoặc nhập Mermaid code" size="small">
-                        <TextArea
-                            value={diagramText}
-                            onChange={(e) => onChange(e.target.value)}
-                            placeholder="Nhập Mermaid diagram code..."
-                            rows={15}
-                            style={{
-                                fontFamily: 'monospace',
-                                fontSize: '13px'
-                            }}
-                        />
-                    </Card>
-
-                    <Space style={{ width: '100%' }}>
-                        <Button
-                            type="primary"
-                            icon={<SaveOutlined />}
-                            onClick={uploadMermaidFile}
-                            loading={saving}
-                            block
-                        >
-                            Lưu & Tạo Link
-                        </Button>
-                        {shareUrl && (
-                            <Button
-                                icon={<LinkOutlined />}
-                                onClick={copyShareLink}
+            <Splitter>
+                <Splitter.Panel defaultSize="30%" min="20%" max="60%">
+                    <Space
+                        orientation="vertical"
+                        style={{
+                            width: '100%',
+                            height: '100vh',
+                            backgroundColor: '#fff',
+                            padding: 20
+                        }}
+                        size="large"
+                    >
+                        <Card title="Upload File MMD" size="small">
+                            <Upload
+                                accept=".mmd,.md,.txt"
+                                beforeUpload={handleFileUpload}
+                                showUploadList={false}
                             >
-                                Copy Link
+                                <Button icon={<UploadOutlined />} block>
+                                    Chọn file .mmd
+                                </Button>
+                            </Upload>
+                        </Card>
+
+                        <Card title="Hoặc nhập Mermaid code" size="small">
+                            <TextArea
+                                value={diagramText}
+                                onChange={(e) => onChange(e.target.value)}
+                                placeholder="Nhập Mermaid diagram code..."
+                                rows={15}
+                                style={{
+                                    fontFamily: 'monospace',
+                                    fontSize: '13px'
+                                }}
+                            />
+                        </Card>
+
+                        <Space style={{ width: '100%' }}>
+                            <Button
+                                type="primary"
+                                icon={<SaveOutlined />}
+                                onClick={uploadMermaidFile}
+                                loading={saving}
+                                block
+                            >
+                                Lưu & Tạo Link
                             </Button>
-                        )}
+                            {shareUrl && (
+                                <Button
+                                    icon={<LinkOutlined />}
+                                    onClick={copyShareLink}
+                                >
+                                    Copy Link
+                                </Button>
+                            )}
+                        </Space>
+
+                        <Card size="small" title="Ví dụ Mermaid syntax:">
+                            <pre
+                                style={{
+                                    fontSize: '11px',
+                                    margin: 0,
+                                    whiteSpace: 'pre-wrap'
+                                }}
+                            >
+                                {exampleDiagram}
+                            </pre>
+                        </Card>
                     </Space>
-
-                    <Card size="small" title="Ví dụ Mermaid syntax:">
-                        <pre
-                            style={{
-                                fontSize: '11px',
-                                margin: 0,
-                                whiteSpace: 'pre-wrap'
-                            }}
-                        >
-                            {exampleDiagram}
-                        </pre>
-                    </Card>
-                </Space>
-            </Sider>
-
-            <MermaidPreview loading={loading} diagramText={diagramText} />
+                </Splitter.Panel>
+                <Splitter.Panel>
+                    <MermaidPreview
+                        loading={loading}
+                        diagramText={diagramText}
+                    />
+                </Splitter.Panel>
+            </Splitter>
         </Layout>
     )
 }
