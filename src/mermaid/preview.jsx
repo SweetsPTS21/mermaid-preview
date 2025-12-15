@@ -4,11 +4,13 @@ import {
     DragOutlined,
     FullscreenExitOutlined,
     FullscreenOutlined,
+    LoadingOutlined,
     ReloadOutlined,
     ZoomInOutlined,
     ZoomOutOutlined
 } from '@ant-design/icons'
 import mermaid from 'mermaid'
+import { handleFullScreen, preventDefaultZoom } from '../utils/utils'
 
 // Cấu hình Mermaid
 mermaid.initialize({
@@ -37,35 +39,11 @@ const MermaidPreview = ({
     const debounceTimerRef = useRef(null)
 
     useEffect(() => {
-        const handleFullscreenChange = () => {
-            setIsFullscreen(!!document.fullscreenElement)
-        }
-
-        document.addEventListener('fullscreenchange', handleFullscreenChange)
-        return () => {
-            document.removeEventListener(
-                'fullscreenchange',
-                handleFullscreenChange
-            )
-        }
+        handleFullScreen(setIsFullscreen)
     }, [])
 
     useEffect(() => {
-        const preventBrowserZoom = (e) => {
-            if (e.ctrlKey || e.metaKey) {
-                e.preventDefault()
-            }
-        }
-
-        const container = containerRef.current
-        if (container) {
-            container.addEventListener('wheel', preventBrowserZoom, {
-                passive: false
-            })
-            return () => {
-                container.removeEventListener('wheel', preventBrowserZoom)
-            }
-        }
+        preventDefaultZoom(containerRef)
     }, [])
 
     useEffect(() => {
@@ -257,7 +235,10 @@ const MermaidPreview = ({
                     }}
                 >
                     {rendering || loading ? (
-                        <Spin size="large" tip="Đang render diagram..." />
+                        <Spin
+                            indicator={<LoadingOutlined />}
+                            tip="Đang render diagram..."
+                        />
                     ) : diagramSvg ? (
                         <div
                             style={{

@@ -1,0 +1,131 @@
+.markdown-preview h1 {
+    font-size: 2.5em;
+    font-weight: 700;
+    margin: 1em 0 0.5em;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 0.3em;
+}
+
+.markdown-preview h2 {
+    font-size: 2em;
+    font-weight: 600;
+    margin: 1em 0 0.5em;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.3em;
+}
+
+.markdown-preview h3 {
+    font-size: 1.5em;
+    font-weight: 600;
+    margin: 1em 0 0.5em;
+}
+
+.markdown-preview p {
+    margin: 1em 0;
+}
+
+.markdown-preview code {
+    background: #f5f5f5;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: Monaco, Consolas, monospace;
+    font-size: 0.9em;
+}
+
+.markdown-preview pre {
+    background: #f5f5f5;
+    padding: 16px;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 1em 0;
+}
+
+.markdown-preview pre code {
+    background: none;
+    padding: 0;
+}
+
+.markdown-preview table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1em 0;
+}
+
+.markdown-preview table th,
+.markdown-preview table td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+.markdown-preview table th {
+    background: #f5f5f5;
+    font-weight: 600;
+}
+
+.markdown-preview table tr:nth-child(even) {
+    background: #fafafa;
+}
+
+.markdown-preview ul, .markdown-preview ol {
+    margin: 1em 0;
+    padding-left: 2em;
+}
+
+.markdown-preview li {
+    margin: 0.5em 0;
+}
+
+.markdown-preview blockquote {
+    border-left: 4px solid #ddd;
+    padding-left: 1em;
+    margin: 1em 0;
+    color: #666;
+}
+
+.markdown-preview a {
+    color: #1890ff;
+    text-decoration: none;
+}
+
+.markdown-preview a:hover {
+    text-decoration: underline;
+}
+
+.markdown-preview img {
+    max-width: 100%;
+    height: auto;
+}
+
+.markdown-preview strong {
+    font-weight: 700;
+}
+
+.markdown-preview em {
+    font-style: italic;
+}
+
+.markdown-preview del {
+    text-decoration: line-through;
+}
+
+.mermaid-diagram {
+    text-align: center;
+    background: #fafafa;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.mermaid-diagram svg {
+    max-width: 100%;
+    height: auto;
+}
+
+.mermaid-error {
+    background: #fff2f0;
+    border: 1px solid #ffccc7;
+    padding: 16px;
+    border-radius: 6px;
+    color: #cf1322;
+    margin: 1em 0;
+}

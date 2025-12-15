@@ -9,14 +9,18 @@ import {
     Splitter,
     Upload
 } from 'antd'
-import { LinkOutlined, SaveOutlined, UploadOutlined } from '@ant-design/icons'
+import {
+    ArrowRightOutlined,
+    LinkOutlined,
+    SaveOutlined,
+    UploadOutlined
+} from '@ant-design/icons'
 import { exampleDiagram } from './example'
-import { createMermaidFile, getFileData, getMermaidFile } from '../api/mermaid'
-import { formatFilename } from './utls'
+import { createMermaidFile, getMermaidFile } from '../api/utils'
 import MermaidPreview from './preview'
 import mermaid from 'mermaid'
+import { loadFileData, saveAndUpload } from '../utils/utils'
 
-const { Sider } = Layout
 const { TextArea } = Input
 
 function Mermaid() {
@@ -32,7 +36,12 @@ function Mermaid() {
         const fileName = urlParams.get('file')
 
         if (fileName) {
-            loadFileData(fileName).then()
+            loadFileData(
+                fileName,
+                setDiagramText,
+                setLoading,
+                getMermaidFile
+            ).then()
         }
     }, [])
 
@@ -67,87 +76,13 @@ function Mermaid() {
     }
 
     const uploadMermaidFile = async () => {
-        if (!diagramText.trim()) {
-            message.warning('Vui lòng nhập nội dung diagram!')
-            return
-        }
-
-        try {
-            setSaving(true)
-
-            // Tạo file mmd từ text
-            const blob = new Blob([diagramText], { type: 'text/plain' })
-            const formData = new FormData()
-            formData.append('file', blob, `diagram-${Date.now()}.mmd`)
-
-            const {
-                success,
-                message: errorMsg,
-                data
-            } = await createMermaidFile(formData)
-
-            if (!success) {
-                message.error(`Lỗi khi lưu file ${errorMsg}`)
-            }
-
-            // Lưu vào localStorage để cache
-            const fileName = formatFilename(data?.fileName)
-            localStorage.setItem(fileName, diagramText)
-
-            // Tạo URL với file ID
-            const shareUrl = `${process.env.REACT_APP_MAIN_APP_URL}?file=${fileName}`
-
-            // Copy URL vào clipboard
-            await navigator.clipboard.writeText(shareUrl)
-
-            message.success(
-                'Đã lưu thành công! Link đã được copy vào clipboard.'
-            )
-            setShareUrl(shareUrl)
-        } catch (error) {
-            message.error('Lỗi lưu file: ' + error.message)
-        } finally {
-            setSaving(false)
-        }
-    }
-
-    const loadFileData = async (fileName) => {
-        try {
-            setLoading(true)
-
-            // load local file first
-            const localData = loadLocalFile(fileName)
-            if (localData) {
-                setDiagramText(localData)
-                return
-            }
-
-            // fetch file from server
-            const {
-                success,
-                message: errorMsg,
-                data
-            } = await getMermaidFile(fileName)
-            if (!success) {
-                message.error(`Lỗi khi tải file ${errorMsg}`)
-            }
-
-            // get file data
-            const fileData = await getFileData(data?.fileDownloadUri)
-            if (fileData) {
-                setDiagramText(fileData)
-            } else {
-                message.error('Không tìm thấy file!')
-            }
-        } catch (error) {
-            message.error('Lỗi tải file: ' + error.message)
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    const loadLocalFile = (fileName) => {
-        return window.localStorage.getItem(fileName)
+        await saveAndUpload(
+            diagramText,
+            'mmd',
+            setSaving,
+            setShareUrl,
+            createMermaidFile
+        )
     }
 
     const copyShareLink = () => {
@@ -233,6 +168,13 @@ function Mermaid() {
                                 {exampleDiagram}
                             </pre>
                         </Card>
+
+                        <Button
+                            icon={<ArrowRightOutlined />}
+                            onClick={() => {}}
+                        >
+                            Try markdown
+                        </Button>
                     </Space>
                 </Splitter.Panel>
                 <Splitter.Panel>

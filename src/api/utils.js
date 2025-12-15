@@ -1,8 +1,8 @@
-export const BASE_URL = `${process.env.REACT_APP_API_URL}/api/v1/utils/mermaid-file`
+export const BASE_URL = `${process.env.REACT_APP_API_URL}/api/v1/utils`
 
 export async function createMermaidFile(formData) {
     try {
-        const response = await fetch(BASE_URL, {
+        const response = await fetch(`${BASE_URL}/mermaid-file`, {
             method: 'POST',
             body: formData
         })
@@ -16,10 +16,34 @@ export async function createMermaidFile(formData) {
 
 export async function getMermaidFile(name) {
     try {
-        const response = await fetch(`${BASE_URL}/${name}`)
+        const response = await fetch(`${BASE_URL}/mermaid-file/${name}`)
         return await response.json()
     } catch (error) {
         console.error('Error getting mermaid file:', error)
+        throw error
+    }
+}
+
+export async function createMarkdownFile(formData) {
+    try {
+        const response = await fetch(`${BASE_URL}/markdown-file`, {
+            method: 'POST',
+            body: formData
+        })
+
+        return await response.json()
+    } catch (error) {
+        console.error('Error creating markdown file:', error)
+        throw error
+    }
+}
+
+export async function getMarkdownFile(name) {
+    try {
+        const response = await fetch(`${BASE_URL}/markdown-file/${name}`)
+        return await response.json()
+    } catch (error) {
+        console.error('Error getting markdown file:', error)
         throw error
     }
 }
@@ -43,8 +67,7 @@ export async function getFileData(url) {
             return null
         }
 
-        const text = await response.text()
-        return text
+        return await response.text()
     } catch (error) {
         console.error('Error in getFileData:', {
             error: error.message,
