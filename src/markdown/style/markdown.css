@@ -128,4 +128,6 @@
     border-radius: 6px;
     color: #cf1322;
     margin: 1em 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }

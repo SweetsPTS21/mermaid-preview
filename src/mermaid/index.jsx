@@ -9,12 +9,7 @@ import {
     Splitter,
     Upload
 } from 'antd'
-import {
-    ArrowRightOutlined,
-    LinkOutlined,
-    SaveOutlined,
-    UploadOutlined
-} from '@ant-design/icons'
+import { LinkOutlined, SaveOutlined, UploadOutlined } from '@ant-design/icons'
 import { exampleDiagram } from './example'
 import { createMermaidFile, getMermaidFile } from '../api/utils'
 import MermaidPreview from './preview'
@@ -168,13 +163,6 @@ function Mermaid() {
                                 {exampleDiagram}
                             </pre>
                         </Card>
-
-                        <Button
-                            icon={<ArrowRightOutlined />}
-                            onClick={() => {}}
-                        >
-                            Try markdown
-                        </Button>
                     </Space>
                 </Splitter.Panel>
                 <Splitter.Panel>
