@@ -1,6 +1,17 @@
-// Function to decode HTML entities
 import { message } from 'antd'
 import { getFileData } from '../api/utils'
+import { FILE_TYPE } from './constants'
+
+export function getFileType(fileExt) {
+    switch (fileExt) {
+        case 'mmd':
+            return 'mermaid'
+        case 'md':
+            return 'markdown'
+        default:
+            return 'text'
+    }
+}
 
 export function decodeHtml(html) {
     const txt = document.createElement('textarea')
@@ -13,9 +24,9 @@ export function formatFilename(fileName) {
 }
 
 export function buildShareUrl(fileName, ext) {
-    const path = ext === 'mmd' ? 'mermaid' : 'markdown'
+    const type = getFileType(ext)
 
-    return `${process.env.REACT_APP_MAIN_APP_URL}/${path}?file=${fileName}`
+    return `${process.env.REACT_APP_MAIN_APP_URL}/${type}?file=${fileName}`
 }
 
 export function handleFullScreen(setIsFullscreen) {
@@ -73,6 +84,9 @@ export async function saveAndUpload(
             message.error(`Lỗi khi lưu file ${errorMsg}`)
         }
 
+        // Xoá file cũ
+        deleteOldFile(fileExt)
+
         // Lưu vào localStorage để cache
         const fileName = formatFilename(data?.fileName)
         localStorage.setItem(fileName, content)
@@ -94,6 +108,7 @@ export async function saveAndUpload(
 
 export async function loadFileData(
     fileName = '',
+    fileType = FILE_TYPE.MERMAID,
     setDiagramText,
     setLoading,
     loadDataFn = () => {}
@@ -101,10 +116,13 @@ export async function loadFileData(
     try {
         setLoading(true)
 
-        // load local file first
-        const localData = window.localStorage.getItem(fileName)
-        if (localData) {
-            setDiagramText(localData)
+        // load data from local
+        if (!fileName) {
+            const data = getLocalFile(fileType)
+            if (data.length > 0) {
+                setDiagramText(data[0])
+            }
+
             return
         }
 
@@ -126,4 +144,20 @@ export async function loadFileData(
     } finally {
         setLoading(false)
     }
+}
+
+export function getLocalFile(fileType) {
+    return Object.keys(localStorage)
+        .filter((key) => key.includes(fileType))
+        .map((key) => localStorage.getItem(key))
+}
+
+export function deleteOldFile(fileExt) {
+    const fileType = getFileType(fileExt)
+
+    Object.keys(localStorage).forEach((key) => {
+        if (key.includes(fileType)) {
+            localStorage.removeItem(key)
+        }
+    })
 }

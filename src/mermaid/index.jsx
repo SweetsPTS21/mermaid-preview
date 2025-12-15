@@ -1,27 +1,17 @@
 import React, { useEffect, useState } from 'react'
-import {
-    Button,
-    Card,
-    Input,
-    Layout,
-    message,
-    Space,
-    Splitter,
-    Upload
-} from 'antd'
+import { Button, Card, Input, Layout, message, Space, Splitter, Upload } from 'antd'
 import { LinkOutlined, SaveOutlined, UploadOutlined } from '@ant-design/icons'
-import { exampleDiagram } from './example'
+import { exampleDiagram, initMermaid } from './example'
 import { createMermaidFile, getMermaidFile } from '../api/utils'
 import MermaidPreview from './preview'
 import mermaid from 'mermaid'
 import { loadFileData, saveAndUpload } from '../utils/utils'
+import { FILE_TYPE } from '../utils/constants'
 
 const { TextArea } = Input
 
 function Mermaid() {
-    const [diagramText, setDiagramText] = useState(
-        'graph TD\n  A[Start] --> B[Process]\n  B --> C[End]'
-    )
+    const [diagramText, setDiagramText] = useState(initMermaid)
     const [loading, setLoading] = useState(false)
     const [saving, setSaving] = useState(false)
     const [shareUrl, setShareUrl] = useState(null)
@@ -30,14 +20,13 @@ function Mermaid() {
         const urlParams = new URLSearchParams(window.location.search)
         const fileName = urlParams.get('file')
 
-        if (fileName) {
-            loadFileData(
-                fileName,
-                setDiagramText,
-                setLoading,
-                getMermaidFile
-            ).then()
-        }
+        loadFileData(
+            fileName,
+            FILE_TYPE.MERMAID,
+            setDiagramText,
+            setLoading,
+            getMermaidFile
+        ).then()
     }, [])
 
     const handleFileUpload = (file) => {

@@ -4,3 +4,7 @@ export const exampleDiagram = `graph TD
   B -->|No| D[Action 2]
   C --> E[End]
   D --> E`
+
+export const initMermaid = `graph TD
+  A[Start] --> B[Process]
+  B --> C[End]`

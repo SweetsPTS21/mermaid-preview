@@ -8,6 +8,7 @@ import { decodeHtml, loadFileData, saveAndUpload } from '../utils/utils'
 import MarkdownPreview from './preview'
 import MarkdownTool from './tools'
 import { createMarkdownFile, getMarkdownFile } from '../api/utils'
+import { FILE_TYPE } from '../utils/constants'
 
 const { Sider } = Layout
 const { TextArea } = Input
@@ -26,14 +27,13 @@ const MarkdownEditor = () => {
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search)
         const fileName = urlParams.get('file')
-        if (fileName) {
-            loadFileData(
-                fileName,
-                setMarkdownText,
-                setLoading,
-                getMarkdownFile
-            ).then()
-        }
+        loadFileData(
+            fileName,
+            FILE_TYPE.MARKDOWN,
+            setMarkdownText,
+            setLoading,
+            getMarkdownFile
+        ).then()
     }, [])
 
     // Render markdown với debounce

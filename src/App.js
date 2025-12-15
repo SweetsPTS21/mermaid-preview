@@ -1,6 +1,11 @@
 import './App.css'
 import { ConfigProvider } from 'antd'
-import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-dom'
+import {
+    BrowserRouter as Router,
+    Navigate,
+    Route,
+    Routes
+} from 'react-router-dom'
 import Mermaid from './mermaid'
 import MarkdownEditor from './markdown'
 import FloatMenu from './menu'
