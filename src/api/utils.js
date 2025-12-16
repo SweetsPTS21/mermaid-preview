@@ -1,4 +1,6 @@
-export const BASE_URL = `${process.env.REACT_APP_API_URL}/api/v1/utils`
+import { BASE_API_URL } from '../utils/url'
+
+const BASE_URL = `${BASE_API_URL}/api/v1/utils`
 
 export async function createMermaidFile(formData) {
     try {

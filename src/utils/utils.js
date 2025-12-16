@@ -1,6 +1,7 @@
 import { message } from 'antd'
 import { getFileData } from '../api/utils'
 import { FILE_TYPE } from './constants'
+import { BASE_APP_URL } from './url'
 
 export function getFileType(fileExt) {
     switch (fileExt) {
@@ -25,8 +26,7 @@ export function formatFilename(fileName) {
 
 export function buildShareUrl(fileName, ext) {
     const type = getFileType(ext)
-
-    return `${process.env.REACT_APP_MAIN_APP_URL}/${type}?file=${fileName}`
+    return `${BASE_APP_URL}/${type}?file=${fileName}`
 }
 
 export function handleFullScreen(setIsFullscreen) {
